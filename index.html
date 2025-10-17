@@ -24,12 +24,12 @@
     import { getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-    // Tu configuración de Firebase
+    // Tu configuración personal de Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyDoLccZFrBLBBAtYJpYx_hHhGEzX_el--k",
         authDomain: "control-de-tareas-ariba.firebaseapp.com",
         projectId: "control-de-tareas-ariba",
-        storageBucket: "control-de-tareas-ariba.appspot.com", // <-- ESTA ES LA LÍNEA CRÍTICA Y VERIFICADA
+        storageBucket: "control-de-tareas-ariba.appspot.com", // Dirección corregida y verificada
         messagingSenderId: "411622680191",
         appId: "1:411622680191:web:42c2243154a0429a3ac14a",
         measurementId: "G-YQPCKEYHYH"
@@ -41,7 +41,7 @@
     const storage = getStorage(app);
     const tasksCollection = collection(db, "tasks");
 
-    // --- LÓGICA DE LA APLICACIÓN ---
+    // --- LÓGICA DE LA APLICACIÓN (SIN CAMBIOS) ---
     document.addEventListener('DOMContentLoaded', () => {
         const calendarEl = document.getElementById('calendar');
         let currentTaskId = null;
@@ -55,7 +55,6 @@
             return diffDays < 2 ? 'urgent' : 'pending';
         };
         
-        // --- CALENDARIO ---
         calendar = new FullCalendar.Calendar(calendarEl, {
             locale: 'es', initialView: 'dayGridMonth',
             headerToolbar: {left:'prev,next today',center:'title',right:'dayGridMonth,timeGridWeek,listMonth'},
@@ -68,7 +67,6 @@
         });
         calendar.render();
 
-        // --- LECTURA EN TIEMPO REAL ---
         onSnapshot(tasksCollection, (querySnapshot) => {
             const tasks = [];
             querySnapshot.forEach((doc) => {
@@ -84,7 +82,6 @@
             })));
         });
 
-        // --- FUNCIONES CRUD CON FIREBASE V9+ ---
         async function saveTask(taskData) {
             const { id, file, ...data } = taskData;
             const loadingButton = taskFormModal.querySelector('button[type="submit"]');
@@ -145,7 +142,6 @@
             closeAllModals();
         }
 
-        // --- MANEJO DE MODALES ---
         function createModal(id,content){let modal=document.getElementById(id);if(modal)modal.remove();modal=document.createElement('div');modal.id=id;modal.className='modal';modal.innerHTML=`<div class="modal-content"><span class="close-btn">&times;</span>${content}</div>`;document.body.appendChild(modal);modal.querySelector('.close-btn').onclick=()=>modal.style.display='none';return modal}const taskFormModalHTML=`<h2 id="modal-title"></h2><form id="taskForm"><input type="hidden" id="taskId"><input type="text" id="taskName" placeholder="Título de la Tarea" required><input type="text" id="taskClient" placeholder="Cliente" required><textarea id="aribaComm" placeholder="Comunicación Ariba..." rows="4" required></textarea><label for="taskAttachment" style="display:block; margin-bottom:5px; font-size:0.9em;">Adjunto (opcional)</label><input type="file" id="taskAttachment"><div id="current-attachment" style="font-size: 0.8em; opacity: 0.8; margin-bottom: 15px;"></div><input type="hidden" id="dueDate"><button type="submit">Guardar Tarea</button></form>`;const taskDetailModalHTML=`<div id="taskDetailContent"></div><div id="taskDetailActions"><button id="completeTaskBtn"></button><button id="editTaskBtn">Editar</button><button id="deleteTaskBtn">Eliminar</button></div>`;const taskFormModal=createModal('taskModal',taskFormModalHTML);const taskDetailModal=createModal('taskDetailModal',taskDetailModalHTML);
         const taskForm = document.getElementById('taskForm');
         
@@ -168,7 +164,6 @@
             taskDetailModal.style.display = 'flex';
         }
 
-        // Event Listeners
         taskForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const fileInput = document.getElementById('taskAttachment');
