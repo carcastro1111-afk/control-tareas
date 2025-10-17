@@ -24,7 +24,7 @@
     import { getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-    // Tu configuración personal y exacta de Firebase
+    // Tu configuración personal de Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyDoLccZFrBLBBAtYJpYx_hHhGEzX_el--k",
         authDomain: "control-de-tareas-ariba.firebaseapp.com",
@@ -41,11 +41,12 @@
     const storage = getStorage(app);
     const tasksCollection = collection(db, "tasks");
 
-    // --- LÓGICA DE LA APLICACIÓN (SIN CAMBIOS) ---
+    // --- LÓGICA DE LA APLICACIÓN ---
     document.addEventListener('DOMContentLoaded', () => {
         const calendarEl = document.getElementById('calendar');
         let currentTaskId = null;
         let calendar;
+        let allTasks = []; // Variable global para guardar las tareas para la exportación
 
         const getTaskStatus = (task) => {
             if (task.completed) return 'completed';
@@ -55,10 +56,55 @@
             return diffDays < 2 ? 'urgent' : 'pending';
         };
         
+        // --- FUNCIÓN PARA EXPORTAR A EXCEL ---
+        function exportToExcel() {
+            if (allTasks.length === 0) {
+                alert("No hay tareas para exportar.");
+                return;
+            }
+            const tasksToExport = allTasks.map(task => {
+                let statusText = '';
+                const status = getTaskStatus(task);
+                if(status === 'completed') statusText = 'Completada';
+                else if(status === 'urgent') statusText = 'Urgente';
+                else statusText = 'Pendiente';
+
+                return {
+                    'ID Tarea': task.id,
+                    'Título': task.name,
+                    'Cliente': task.client,
+                    'Comunicación Ariba': task.aribaComm,
+                    'Fecha de Vencimiento': task.dueDate,
+                    'Estado': statusText,
+                    'Adjunto': task.attachmentName || 'No'
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(tasksToExport);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Tareas");
+            worksheet["!cols"] = [
+                { wch: 20 }, { wch: 40 }, { wch: 20 },
+                { wch: 60 }, { wch: 20 }, { wch: 15 }, { wch: 30 }
+            ];
+            XLSX.writeFile(workbook, "ReporteDeTareas.xlsx");
+        }
+        
+        // --- CALENDARIO ---
         calendar = new FullCalendar.Calendar(calendarEl, {
             locale: 'es', initialView: 'dayGridMonth',
             headerToolbar: {left:'prev,next today',center:'title',right:'dayGridMonth,timeGridWeek,listMonth'},
             height: '100%',
+            // --- BOTÓN DE EXPORTACIÓN AÑADIDO DE NUEVO ---
+            customButtons: {
+                export: {
+                    text: 'Exportar a Excel',
+                    click: exportToExcel
+                }
+            },
+            footerToolbar: {
+                 right: 'export'
+            },
             dateClick: (info) => openFormModal({ date: info.dateStr }),
             eventClick: (info) => {
                 currentTaskId = info.event.id;
@@ -67,11 +113,15 @@
         });
         calendar.render();
 
+        // --- LECTURA EN TIEMPO REAL ---
         onSnapshot(tasksCollection, (querySnapshot) => {
             const tasks = [];
             querySnapshot.forEach((doc) => {
                 tasks.push({ id: doc.id, ...doc.data() });
             });
+            
+            allTasks = tasks; // Actualizamos la variable global con los datos más recientes
+            
             calendar.removeAllEvents();
             calendar.addEventSource(tasks.map(task => ({
                 id: task.id,
