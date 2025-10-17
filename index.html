@@ -92,19 +92,24 @@
         
         // --- CALENDARIO ---
         calendar = new FullCalendar.Calendar(calendarEl, {
-            locale: 'es', initialView: 'dayGridMonth',
-            headerToolbar: {left:'prev,next today',center:'title',right:'dayGridMonth,timeGridWeek,listMonth'},
-            height: '100%',
-            // --- BOTÓN DE EXPORTACIÓN AÑADIDO DE NUEVO ---
+            locale: 'es',
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,listMonth'
+            },
+            // --- CÓDIGO CORREGIDO PARA EL BOTÓN DE EXPORTACIÓN ---
+            footerToolbar: {
+                right: 'exportButton' // Se usa un nombre de botón personalizado
+            },
             customButtons: {
-                export: {
+                exportButton: {
                     text: 'Exportar a Excel',
                     click: exportToExcel
                 }
             },
-            footerToolbar: {
-                 right: 'export'
-            },
+            height: '100%',
             dateClick: (info) => openFormModal({ date: info.dateStr }),
             eventClick: (info) => {
                 currentTaskId = info.event.id;
