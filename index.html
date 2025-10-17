@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Tareas Ariba (Online)</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root{--bg-color:#1a1a2e;--primary-color:#16213e;--secondary-color:#0f3460;--accent-color:#e94560;--font-color:#e0e0e0;--card-bg:#1f2847;--completed-color:#2ecc71;--pending-color:#f1c40f;--urgent-color:#e74c3c;--border-color:#3a4a78}html,body{height:100%;margin:0;padding:0;overflow:hidden}body{font-family:'Poppins',sans-serif;background-color:var(--bg-color);color:var(--font-color);padding:20px;box-sizing:border-box}.container{max-width:1600px;margin:auto;height:calc(100% - 70px)}header{text-align:center;margin-bottom:20px;color:var(--accent-color);height:50px}#calendar-container{background-color:var(--primary-color);padding:25px;border-radius:15px;box-shadow:0 4px 20px rgba(0,0,0,.4);height:100%;box-sizing:border-box}.fc{font-size:1em;--fc-border-color:var(--border-color);--fc-today-bg-color:rgba(233,69,96,.15);--fc-event-text-color:#fff}.fc .fc-toolbar-title{color:var(--font-color)}.fc .fc-button-primary{background-color:var(--secondary-color);border-color:var(--secondary-color)}.fc .fc-button-primary:hover,.fc .fc-button-active{background-color:var(--accent-color)!important;border-color:var(--accent-color)!important}.fc .fc-daygrid-day-number{color:var(--font-color)}.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number{color:var(--accent-color);font-weight:700}.fc-event{border-width:2px!important;padding:3px 5px;cursor:pointer;transition:transform .2s ease,filter .2s ease}.fc-event:hover{transform:scale(1.05);filter:brightness(1.2);z-index:10}.fc-event.status-pending{background-color:var(--pending-color)!important;border-color:var(--pending-color)!important;color:#000!important}.fc-event.status-urgent{background-color:var(--urgent-color)!important;border-color:var(--urgent-color)!important}.fc-event.status-completed{background-color:var(--completed-color)!important;border-color:var(--completed-color)!important;text-decoration:line-through}.fc-list{border:none!important}.fc-list-event:hover td{background-color:var(--secondary-color)!important}.fc-list-event-title a{color:var(--font-color)!important}.fc-list-day-cushion{background-color:var(--card-bg)!important;color:var(--accent-color)!important;padding:10px 15px!important}.fc-list-table tbody tr,.fc-list-table thead tr{background-color:transparent!important}.fc-list-event.status-pending .fc-list-event-dot{border-color:var(--pending-color)!important}.fc-list-event.status-urgent .fc-list-event-dot{border-color:var(--urgent-color)!important}.fc-list-event.status-completed .fc-list-event-dot{border-color:var(--completed-color)!important}.fc-list-event-time{color:var(--font-color)!important;opacity:.8}.modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.7);align-items:center;justify-content:center}.modal-content{background-color:var(--primary-color);padding:30px;border-radius:15px;width:90%;max-width:550px;position:relative;box-shadow:0 5px 25px rgba(0,0,0,.5)}.close-btn{position:absolute;top:15px;right:20px;color:#aaa;font-size:28px;font-weight:700;cursor:pointer}#taskForm input,#taskForm textarea,#taskForm #taskAttachment{width:calc(100% - 24px);padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--secondary-color);background-color:var(--bg-color);color:var(--font-color);font-size:1em}#taskForm #taskAttachment{padding:5px}#taskForm textarea{font-family:'Poppins',sans-serif;resize:vertical}#taskForm button{width:100%;padding:15px;border:none;border-radius:8px;background-color:var(--accent-color);color:#fff;font-size:1.1em;cursor:pointer}#taskDetailContent{line-height:1.7}#taskDetailContent h3{margin-top:0;color:var(--accent-color)}#taskDetailContent p{margin:10px 0;background-color:var(--card-bg);padding:10px;border-radius:8px;word-break:break-word}#taskDetailContent p a{color:var(--accent-color);text-decoration:none;font-weight:700}#taskDetailContent p a:hover{text-decoration:underline}#taskDetailActions{display:flex;gap:10px;margin-top:20px}#taskDetailActions button{flex-grow:1;padding:12px;border-radius:8px;border:none;color:#fff;font-size:1em;cursor:pointer;transition:opacity .3s}#editTaskBtn{background-color:#3498db}#completeTaskBtn{background-color:#95a5a6}#deleteTaskBtn{background-color:var(--urgent-color)}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header><h1>Control de Tareas - SAP Ariba</h1></header>
+        <div id="calendar-container"><div id="calendar"></div></div>
+    </div>
+    <script type="module">
+    // Importar funciones de los SDKs de Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+    // Tu configuración de Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyDoLccZFrBLBBAtYJpYx_hHhGEzX_el--k",
+        authDomain: "control-de-tareas-ariba.firebaseapp.com",
+        projectId: "control-de-tareas-ariba",
+        storageBucket: "control-de-tareas-ariba.appspot.com",
+        messagingSenderId: "411622680191",
+        appId: "1:411622680191:web:42c2243154a0429a3ac14a",
+        measurementId: "G-YQPCKEYHYH"
+    };
+
+    // Inicializar Firebase y servicios
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+    const tasksCollection = collection(db, "tasks");
+
+    // --- LÓGICA DE LA APLICACIÓN ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const calendarEl = document.getElementById('calendar');
+        let currentTaskId = null;
+        let calendar;
+
+        const getTaskStatus = (task) => {
+            if (task.completed) return 'completed';
+            const now = new Date(); now.setHours(0,0,0,0);
+            const due = new Date(task.dueDate + 'T00:00:00');
+            const diffDays = (due - now) / (1000*60*60*24);
+            return diffDays < 2 ? 'urgent' : 'pending';
+        };
+        
+        // --- CALENDARIO ---
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'es', initialView: 'dayGridMonth',
+            headerToolbar: {left:'prev,next today',center:'title',right:'dayGridMonth,timeGridWeek,listMonth'},
+            height: '100%',
+            dateClick: (info) => openFormModal({ date: info.dateStr }),
+            eventClick: (info) => {
+                currentTaskId = info.event.id;
+                openDetailModal(info.event.extendedProps);
+            }
+        });
+        calendar.render();
+
+        // --- LECTURA EN TIEMPO REAL ---
+        onSnapshot(tasksCollection, (querySnapshot) => {
+            const tasks = [];
+            querySnapshot.forEach((doc) => {
+                tasks.push({ id: doc.id, ...doc.data() });
+            });
+            calendar.removeAllEvents();
+            calendar.addEventSource(tasks.map(task => ({
+                id: task.id,
+                title: task.name,
+                start: task.dueDate,
+                classNames: [`status-${getTaskStatus(task)}`],
+                extendedProps: task
+            })));
+        });
+
+        // --- FUNCIONES CRUD CON FIREBASE V9+ ---
+        async function saveTask(taskData) {
+            const { id, file, ...data } = taskData;
+            const loadingButton = taskFormModal.querySelector('button[type="submit"]');
+            loadingButton.disabled = true;
+            loadingButton.textContent = 'Guardando...';
+
+            try {
+                if (file) {
+                    const filePath = `attachments/${Date.now()}_${file.name}`;
+                    const fileRef = ref(storage, filePath);
+                    await uploadBytes(fileRef, file);
+                    data.attachmentUrl = await getDownloadURL(fileRef);
+                    data.attachmentName = file.name;
+                }
+
+                if (id) {
+                    const docRef = doc(db, "tasks", id);
+                    await updateDoc(docRef, data);
+                } else {
+                    await addDoc(tasksCollection, data);
+                }
+                closeAllModals();
+            } catch(error) {
+                console.error("Error al guardar la tarea: ", error);
+                alert("Hubo un error al guardar la tarea.");
+            } finally {
+                loadingButton.disabled = false;
+                loadingButton.textContent = 'Guardar Tarea';
+            }
+        }
+
+        async function deleteTask() {
+            if (!currentTaskId) return;
+            if (confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
+                const docRef = doc(db, "tasks", currentTaskId);
+                const taskDoc = await getDoc(docRef);
+                const taskData = taskDoc.data();
+
+                if (taskData.attachmentUrl) {
+                    try {
+                        const fileRef = ref(storage, taskData.attachmentUrl);
+                        await deleteObject(fileRef);
+                    } catch(e) {
+                        console.warn("El archivo no se pudo eliminar o no existía:", e.message);
+                    }
+                }
+                await deleteDoc(docRef);
+                closeAllModals();
+            }
+        }
+
+        async function toggleComplete() {
+            if (!currentTaskId) return;
+            const docRef = doc(db, "tasks", currentTaskId);
+            const taskDoc = await getDoc(docRef);
+            const currentStatus = taskDoc.data().completed;
+            await updateDoc(docRef, { completed: !currentStatus });
+            closeAllModals();
+        }
+
+        // --- MANEJO DE MODALES ---
+        function createModal(id,content){let modal=document.getElementById(id);if(modal)modal.remove();modal=document.createElement('div');modal.id=id;modal.className='modal';modal.innerHTML=`<div class="modal-content"><span class="close-btn">&times;</span>${content}</div>`;document.body.appendChild(modal);modal.querySelector('.close-btn').onclick=()=>modal.style.display='none';return modal}const taskFormModalHTML=`<h2 id="modal-title"></h2><form id="taskForm"><input type="hidden" id="taskId"><input type="text" id="taskName" placeholder="Título de la Tarea" required><input type="text" id="taskClient" placeholder="Cliente" required><textarea id="aribaComm" placeholder="Comunicación Ariba..." rows="4" required></textarea><label for="taskAttachment" style="display:block; margin-bottom:5px; font-size:0.9em;">Adjunto (opcional)</label><input type="file" id="taskAttachment"><div id="current-attachment" style="font-size: 0.8em; opacity: 0.8; margin-bottom: 15px;"></div><input type="hidden" id="dueDate"><button type="submit">Guardar Tarea</button></form>`;const taskDetailModalHTML=`<div id="taskDetailContent"></div><div id="taskDetailActions"><button id="completeTaskBtn"></button><button id="editTaskBtn">Editar</button><button id="deleteTaskBtn">Eliminar</button></div>`;const taskFormModal=createModal('taskModal',taskFormModalHTML);const taskDetailModal=createModal('taskDetailModal',taskDetailModalHTML);
+        const taskForm = document.getElementById('taskForm');
+        
+        function closeAllModals() {
+            taskFormModal.style.display = 'none';
+            taskDetailModal.style.display = 'none';
+        }
+        window.onclick = (e) => { if (e.target.classList.contains('modal')) closeAllModals(); };
+        
+        function openFormModal({ task, date }) {
+            closeAllModals();
+            taskForm.reset();
+            const modalTitle = taskFormModal.querySelector('#modal-title');const taskIdInput = taskFormModal.querySelector('#taskId');const dueDateInput = taskFormModal.querySelector('#dueDate');const currentAttachmentDiv = taskFormModal.querySelector('#current-attachment');currentAttachmentDiv.textContent = '';if (task) {modalTitle.textContent = 'Editar Tarea';taskIdInput.value = task.id;document.getElementById('taskName').value = task.name;document.getElementById('taskClient').value = task.client;document.getElementById('aribaComm').value = task.aribaComm;dueDateInput.value = task.dueDate;if (task.attachmentName) {currentAttachmentDiv.textContent = `Adjunto actual: ${task.attachmentName}. Sube uno nuevo para reemplazarlo.`}} else {modalTitle.textContent = 'Nueva Tarea';taskIdInput.value = '';dueDateInput.value = date;}
+            taskFormModal.style.display = 'flex';
+        }
+
+        function openDetailModal(task) {
+            closeAllModals();
+            const detailContent = taskDetailModal.querySelector('#taskDetailContent');const formattedDate = new Date(task.dueDate + 'T00:00:00').toLocaleDateString("es-ES", {year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'});let attachmentHtml = '';if (task.attachmentUrl && task.attachmentName) {attachmentHtml = `<p><strong>Adjunto:</strong> <a href="${task.attachmentUrl}" target="_blank" rel="noopener noreferrer">${task.attachmentName}</a></p>`;}detailContent.innerHTML = `<h3>${task.name}</h3><p><strong>Cliente:</strong> ${task.client}</p><p><strong>Comunicación Ariba:</strong><br>${task.aribaComm.replace(/\n/g, '<br>')}</p>${attachmentHtml}<p><strong>Vencimiento:</strong> ${formattedDate}</p>`;const completeBtn = taskDetailModal.querySelector('#completeTaskBtn');completeBtn.textContent = task.completed ? 'Marcar como Pendiente' : 'Completar Tarea';completeBtn.style.backgroundColor = task.completed ? 'var(--pending-color)' : 'var(--completed-color)';
+            taskDetailModal.style.display = 'flex';
+        }
+
+        // Event Listeners
+        taskForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('taskAttachment');
+            const taskData = {
+                id: document.getElementById('taskId').value,
+                name: document.getElementById('taskName').value,
+                client: document.getElementById('taskClient').value,
+                aribaComm: document.getElementById('aribaComm').value,
+                dueDate: document.getElementById('dueDate').value,
+                file: fileInput.files[0] || null
+            };
+            if (!taskData.id) {
+                taskData.completed = false;
+            }
+            saveTask(taskData);
+        });
+        
+        taskDetailModal.querySelector('#editTaskBtn').onclick = async () => {
+            const docRef = doc(db, "tasks", currentTaskId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                openFormModal({ task: { id: docSnap.id, ...docSnap.data() } });
+            }
+        };
+        taskDetailModal.querySelector('#deleteTaskBtn').onclick = deleteTask;
+        taskDetailModal.querySelector('#completeTaskBtn').onclick = toggleComplete;
+    });
+</script>
+</body>
+</html>
