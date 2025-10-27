@@ -50,7 +50,7 @@
         let calendar;
         let allTasks = []; 
         let statusChart = null; 
-        let firstLoad = true; // Variable para controlar la alerta inicial
+        let firstLoad = true;
 
         // --- FUNCIONES AUXILIARES ---
         const getTaskStatus = (task) => {
@@ -63,7 +63,7 @@
 
         function createModal(id,content){
             let modal=document.getElementById(id);
-            if(modal)modal.remove(); // Evita duplicados si se llama varias veces
+            if(modal)modal.remove(); 
             modal=document.createElement('div');
             modal.id=id;
             modal.className='modal';
@@ -72,12 +72,12 @@
             modal.querySelector('.close-btn').onclick=()=>modal.style.display='none';
             return modal;
         }
-
+        
         const taskFormModalHTML=`<h2 id="modal-title"></h2><form id="taskForm"><input type="hidden" id="taskId"><input type="text" id="taskName" placeholder="Título de la Tarea" required><input type="text" id="taskClient" placeholder="Cliente" required><textarea id="aribaComm" placeholder="Comunicación Ariba..." rows="4" required></textarea><label for="taskAttachment" style="display:block; margin-bottom:5px; font-size:0.9em;">Adjunto (opcional)</label><input type="file" id="taskAttachment"><div id="current-attachment" style="font-size: 0.8em; opacity: 0.8; margin-bottom: 15px;"></div><input type="hidden" id="dueDate"><button type="submit">Guardar Tarea</button></form>`;
         const taskDetailModalHTML=`<div id="taskDetailContent"></div><div id="taskDetailActions"><button id="completeTaskBtn"></button><button id="editTaskBtn">Editar</button><button id="deleteTaskBtn">Eliminar</button></div>`;
         const taskFormModal=createModal('taskModal',taskFormModalHTML);
         const taskDetailModal=createModal('taskDetailModal',taskDetailModalHTML);
-        const taskForm = document.getElementById('taskForm');
+        const taskForm = document.getElementById('taskForm'); // Obtener el formulario después de crear el modal
 
         function closeAllModals() { 
             const modals = document.querySelectorAll('.modal');
@@ -169,14 +169,14 @@
             try{
                 if(t){
                     const e=`attachments/${Date.now()}_${t.name}`;
-                    const a_ref=ref(storage,e); // Renombrada variable local
-                    await uploadBytes(a_ref,t);
-                    a.attachmentUrl=await getDownloadURL(a_ref); // Usar variable renombrada
+                    const fileRef=ref(storage,e); // Corregido: 'a' renombrado a 'fileRef'
+                    await uploadBytes(fileRef,t); // Corregido: 'a' renombrado a 'fileRef'
+                    a.attachmentUrl=await getDownloadURL(fileRef); // Corregido: 'a' renombrado a 'fileRef'
                     a.attachmentName=t.name;
                 }
                 if(e){
-                    const t_docRef = doc(db,"tasks",e); // Renombrada variable local
-                    await updateDoc(t_docRef,a);
+                    const docRef = doc(db,"tasks",e); // Corregido: 't' renombrado a 'docRef'
+                    await updateDoc(docRef,a); // Corregido: 't' renombrado a 'docRef'
                 } else {
                     await addDoc(tasksCollection,a);
                 }
@@ -193,21 +193,25 @@
         async function deleteTask(){
             if(!currentTaskId)return;
             if(confirm('¿Estás seguro de que quieres eliminar esta tarea?')){
-                const e=doc(db,"tasks",currentTaskId),t=await getDoc(e),a=t.data();
+                const docRef=doc(db,"tasks",currentTaskId); // Corregido: 'e' renombrado a 'docRef'
+                const t=await getDoc(docRef); // Corregido: 'e' renombrado a 'docRef'
+                const a=t.data();
                 if(a.attachmentUrl)try{
-                    const e_ref=ref(storage,a.attachmentUrl); // Renombrada variable local
-                    await deleteObject(e_ref)
+                    const fileRef=ref(storage,a.attachmentUrl); // Corregido: 'e' renombrado a 'fileRef'
+                    await deleteObject(fileRef) // Corregido: 'e' renombrado a 'fileRef'
                 }catch(o){
                     console.warn("El archivo no se pudo eliminar o no existía:",o.message)
                 }
-                await deleteDoc(e),closeAllModals()
+                await deleteDoc(docRef),closeAllModals() // Corregido: 'e' renombrado a 'docRef'
             }
         }
 
         async function toggleComplete(){
             if(!currentTaskId)return;
-            const e=doc(db,"tasks",currentTaskId),t=await getDoc(e),a=t.data().completed,o={completed:!a,completionDate:a?null:(new Date).toISOString().split("T")[0]};
-            await updateDoc(e,o),closeAllModals()
+            const docRef=doc(db,"tasks",currentTaskId); // Corregido: 'e' renombrado a 'docRef'
+            const t=await getDoc(docRef); // Corregido: 'e' renombrado a 'docRef'
+            const a=t.data().completed,o={completed:!a,completionDate:a?null:(new Date).toISOString().split("T")[0]};
+            await updateDoc(docRef,o),closeAllModals() // Corregido: 'e' renombrado a 'docRef'
         }
         
         // --- FUNCIONES PARA ABRIR MODALES ---
