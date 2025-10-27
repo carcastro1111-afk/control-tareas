@@ -12,12 +12,7 @@
 
     <style>
         :root{--bg-color:#1a1a2e;--primary-color:#16213e;--secondary-color:#0f3460;--accent-color:#e94560;--font-color:#e0e0e0;--card-bg:#1f2847;--completed-color:#2ecc71;--pending-color:#f1c40f;--urgent-color:#e74c3c;--border-color:#3a4a78}html,body{height:100%;margin:0;padding:0;overflow:hidden}body{font-family:'Poppins',sans-serif;background-color:var(--bg-color);color:var(--font-color);padding:20px;box-sizing:border-box}.container{max-width:1600px;margin:auto;height:calc(100% - 70px)}header{text-align:center;margin-bottom:20px;color:var(--accent-color);height:50px}#calendar-container{background-color:var(--primary-color);padding:25px;border-radius:15px;box-shadow:0 4px 20px rgba(0,0,0,.4);height:100%;box-sizing:border-box}.fc{font-size:1em;--fc-border-color:var(--border-color);--fc-today-bg-color:rgba(233,69,69,.15);--fc-event-text-color:#fff}.fc .fc-toolbar-title{color:var(--font-color)}.fc .fc-button-primary{background-color:var(--secondary-color);border-color:var(--secondary-color)}.fc .fc-button-primary:hover,.fc .fc-button-active{background-color:var(--accent-color)!important;border-color:var(--accent-color)!important}.fc .fc-daygrid-day-number{color:var(--font-color)}.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number{color:var(--accent-color);font-weight:700}.fc-event{border-width:2px!important;padding:3px 5px;cursor:pointer;transition:transform .2s ease,filter .2s ease}.fc-event:hover{transform:scale(1.05);filter:brightness(1.2);z-index:10}.fc-event.status-pending{background-color:var(--pending-color)!important;border-color:var(--pending-color)!important;color:#000!important}.fc-event.status-urgent{background-color:var(--urgent-color)!important;border-color:var(--urgent-color)!important}.fc-event.status-completed{background-color:var(--completed-color)!important;border-color:var(--completed-color)!important;text-decoration:line-through}.fc-list{border:none!important}.fc-list-event:hover td{background-color:var(--secondary-color)!important}.fc-list-event-title a{color:var(--font-color)!important}.fc-list-day-cushion{background-color:var(--card-bg)!important;color:var(--accent-color)!important;padding:10px 15px!important}.fc-list-table tbody tr,.fc-list-table thead tr{background-color:transparent!important}.fc-list-event.status-pending .fc-list-event-dot{border-color:var(--pending-color)!important}.fc-list-event.status-urgent .fc-list-event-dot{border-color:var(--urgent-color)!important}.fc-list-event.status-completed .fc-list-event-dot{border-color:var(--completed-color)!important}.fc-list-event-time{color:var(--font-color)!important;opacity:.8}.modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.7);align-items:center;justify-content:center}.modal-content{background-color:var(--primary-color);padding:30px;border-radius:15px;width:90%;max-width:600px;position:relative;box-shadow:0 5px 25px rgba(0,0,0,.5);max-height:80vh;display:flex;flex-direction:column}.close-btn{position:absolute;top:15px;right:20px;color:#aaa;font-size:28px;font-weight:700;cursor:pointer}#taskForm input,#taskForm textarea,#taskForm #taskAttachment{width:calc(100% - 24px);padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--secondary-color);background-color:var(--bg-color);color:var(--font-color);font-size:1em}#taskForm #taskAttachment{padding:5px}#taskForm textarea{font-family:'Poppins',sans-serif;resize:vertical}#taskForm button{width:100%;padding:15px;border:none;border-radius:8px;background-color:var(--accent-color);color:#fff;font-size:1.1em;cursor:pointer}#taskDetailContent{line-height:1.7;overflow-y:auto;word-wrap:break-word;padding-right:15px}#taskDetailContent h3{margin-top:0;color:var(--accent-color)}#taskDetailContent p{margin:10px 0;background-color:var(--card-bg);padding:10px;border-radius:8px}#taskDetailContent p a{color:var(--accent-color);text-decoration:none;font-weight:700}#taskDetailContent p a:hover{text-decoration:underline}#taskDetailActions{display:flex;gap:10px;margin-top:20px;flex-shrink:0}#taskDetailActions button{flex-grow:1;padding:12px;border-radius:8px;border:none;color:#fff;font-size:1em;cursor:pointer;transition:opacity .3s}#editTaskBtn{background-color:#3498db}#completeTaskBtn{background-color:#95a5a6}#deleteTaskBtn{background-color:var(--urgent-color)}
-        /* Estilos para el modal de alerta */
-        #alertModal .modal-content { max-width: 500px; }
-        #alertModal h2 { color: var(--urgent-color); }
-        #alertList { list-style: none; padding: 0; margin-top: 15px; }
-        #alertList li { background-color: var(--card-bg); padding: 8px 12px; border-radius: 5px; margin-bottom: 8px; font-size: 0.9em; }
-        #alertList li strong { color: var(--accent-color); }
+        #alertModal .modal-content { max-width: 500px; } #alertModal h2 { color: var(--urgent-color); } #alertList { list-style: none; padding: 0; margin-top: 15px; } #alertList li { background-color: var(--card-bg); padding: 8px 12px; border-radius: 5px; margin-bottom: 8px; font-size: 0.9em; } #alertList li strong { color: var(--accent-color); }
     </style>
 </head>
 <body>
@@ -55,7 +50,9 @@
         let calendar;
         let allTasks = []; 
         let statusChart = null; 
+        let firstLoad = true; // Variable para controlar la alerta inicial
 
+        // --- FUNCIONES AUXILIARES ---
         const getTaskStatus = (task) => {
             if (task.completed) return 'completed';
             const now = new Date(); now.setHours(0,0,0,0);
@@ -63,14 +60,43 @@
             const diffDays = (due - now) / (1000*60*60*24);
             return diffDays < 2 ? 'urgent' : 'pending';
         };
+
+        function createModal(id,content){
+            let modal=document.getElementById(id);
+            if(modal)modal.remove(); // Evita duplicados si se llama varias veces
+            modal=document.createElement('div');
+            modal.id=id;
+            modal.className='modal';
+            modal.innerHTML=`<div class="modal-content"><span class="close-btn">&times;</span>${content}</div>`;
+            document.body.appendChild(modal);
+            modal.querySelector('.close-btn').onclick=()=>modal.style.display='none';
+            return modal;
+        }
+
+        const taskFormModalHTML=`<h2 id="modal-title"></h2><form id="taskForm"><input type="hidden" id="taskId"><input type="text" id="taskName" placeholder="Título de la Tarea" required><input type="text" id="taskClient" placeholder="Cliente" required><textarea id="aribaComm" placeholder="Comunicación Ariba..." rows="4" required></textarea><label for="taskAttachment" style="display:block; margin-bottom:5px; font-size:0.9em;">Adjunto (opcional)</label><input type="file" id="taskAttachment"><div id="current-attachment" style="font-size: 0.8em; opacity: 0.8; margin-bottom: 15px;"></div><input type="hidden" id="dueDate"><button type="submit">Guardar Tarea</button></form>`;
+        const taskDetailModalHTML=`<div id="taskDetailContent"></div><div id="taskDetailActions"><button id="completeTaskBtn"></button><button id="editTaskBtn">Editar</button><button id="deleteTaskBtn">Eliminar</button></div>`;
+        const taskFormModal=createModal('taskModal',taskFormModalHTML);
+        const taskDetailModal=createModal('taskDetailModal',taskDetailModalHTML);
+        const taskForm = document.getElementById('taskForm');
+
+        function closeAllModals() { 
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => modal.style.display = 'none');
+        }
+        window.onclick = (e) => { if (e.target.classList.contains('modal')) closeAllModals(); };
         
         // --- FUNCIÓN PARA EXPORTAR A EXCEL ---
-        function exportToExcel() { /* ... (sin cambios) ... */ }
+        function exportToExcel(){
+            if(allTasks.length === 0)return void alert("No hay tareas para exportar.");
+            const e=allTasks.map((e=>{let t="";const a=getTaskStatus(e);return"completed"===a?t="Completada":"urgent"===a?t="Urgente":t="Pendiente",{"ID Tarea":e.id,Título:e.name,Cliente:e.client,"Comunicación Ariba":e.aribaComm,"Fecha de Vencimiento":e.dueDate,Estado:t,Adjunto:e.attachmentName||"No"}})),t=XLSX.utils.json_to_sheet(e),a=XLSX.utils.book_new();XLSX.utils.book_append_sheet(a,t,"Tareas"),t["!cols"]=[{wch:20},{wch:40},{wch:20},{wch:60},{wch:20},{wch:15},{wch:30}],XLSX.writeFile(a,"ReporteDeTareas.xlsx")
+        }
         
         // --- LÓGICA PARA EL GRÁFICO ---
-        function openDashboard() { /* ... (sin cambios) ... */ }
+        function openDashboard(){
+            const e={completed:0,urgent:0,pending:0};allTasks.forEach((t=>{const a=getTaskStatus(t);e[a]++}));const t=createModal("dashboardModal",`\n                <h2 style="color: var(--accent-color);">Dashboard de Tareas</h2>\n                <div style="width: 80%; max-width: 400px; margin: 20px auto;">\n                    <canvas id="statusChart"></canvas>\n                </div>\n            `);t.style.display="flex";const a=document.getElementById("statusChart").getContext("2d");statusChart&&statusChart.destroy(),statusChart=new Chart(a,{type:"pie",data:{labels:[`Completadas (${e.completed})`,`Urgentes (${e.urgent})`,`Pendientes (${e.pending})`],datasets:[{label:"Tareas por Estado",data:[e.completed,e.urgent,e.pending],backgroundColor:["#2ecc71","#e74c3c","#f1c40f"],hoverOffset:4}]},options:{responsive:!0,plugins:{legend:{position:"top",labels:{color:"white"}}}}})
+        }
         
-        // --- ¡NUEVA FUNCIÓN PARA MOSTRAR ALERTAS! ---
+        // --- FUNCIÓN PARA MOSTRAR ALERTAS ---
         function showUrgentTasksAlert(urgentTasks) {
             const alertModal = createModal('alertModal', `
                 <h2><span style="font-size: 1.5em;">⚠️</span> ¡Tareas Urgentes!</h2>
@@ -111,7 +137,6 @@
         calendar.render();
 
         // --- LECTURA EN TIEMPO REAL Y VERIFICACIÓN DE ALERTAS ---
-        let firstLoad = true; // Variable para controlar que la alerta solo salga al cargar
         onSnapshot(tasksCollection, (querySnapshot) => {
             const tasks = [];
             querySnapshot.forEach((doc) => {
@@ -126,7 +151,6 @@
                 extendedProps: task
             })));
             
-            // Mostrar alerta solo la primera vez que cargan los datos
             if (firstLoad) {
                 const urgentTasks = allTasks.filter(task => getTaskStatus(task) === 'urgent');
                 if (urgentTasks.length > 0) {
@@ -136,49 +160,105 @@
             }
         });
 
-        async function saveTask(taskData) { /* ... (sin cambios) ... */ }
-        async function deleteTask() { /* ... (sin cambios) ... */ }
-        async function toggleComplete() { /* ... (sin cambios, usa la versión con completionDate) ... */ }
-
-        function createModal(id,content){ /* ... (sin cambios) ... */ }
-        const taskFormModal = createModal('taskModal', `...`);
-        const taskDetailModal = createModal('taskDetailModal', `...`);
-        
-        // [El código HTML interno de los modales es el mismo]
-        function createModal(id,content){let modal=document.getElementById(id);if(modal)modal.remove();modal=document.createElement('div');modal.id=id;modal.className='modal';modal.innerHTML=`<div class="modal-content"><span class="close-btn">&times;</span>${content}</div>`;document.body.appendChild(modal);modal.querySelector('.close-btn').onclick=()=>modal.style.display='none';return modal}const taskFormModalHTML=`<h2 id="modal-title"></h2><form id="taskForm"><input type="hidden" id="taskId"><input type="text" id="taskName" placeholder="Título de la Tarea" required><input type="text" id="taskClient" placeholder="Cliente" required><textarea id="aribaComm" placeholder="Comunicación Ariba..." rows="4" required></textarea><label for="taskAttachment" style="display:block; margin-bottom:5px; font-size:0.9em;">Adjunto (opcional)</label><input type="file" id="taskAttachment"><div id="current-attachment" style="font-size: 0.8em; opacity: 0.8; margin-bottom: 15px;"></div><input type="hidden" id="dueDate"><button type="submit">Guardar Tarea</button></form>`;const taskDetailModalHTML=`<div id="taskDetailContent"></div><div id="taskDetailActions"><button id="completeTaskBtn"></button><button id="editTaskBtn">Editar</button><button id="deleteTaskBtn">Eliminar</button></div>`;const taskFormModal=createModal('taskModal',taskFormModalHTML);const taskDetailModal=createModal('taskDetailModal',taskDetailModalHTML);
-        const taskForm = document.getElementById('taskForm');
-        
-        // Función closeAllModals actualizada para incluir el modal de alerta
-        function closeAllModals() { 
-            taskFormModal.style.display = 'none'; 
-            taskDetailModal.style.display = 'none'; 
-            if(document.getElementById('dashboardModal')) document.getElementById('dashboardModal').style.display = 'none';
-            if(document.getElementById('alertModal')) document.getElementById('alertModal').style.display = 'none'; // Cierra la alerta
+        // --- FUNCIONES CRUD CON FIREBASE V9+ ---
+        async function saveTask(taskData){
+            const{id:e,file:t,...a}=taskData;
+            const o=taskFormModal.querySelector('button[type="submit"]');
+            o.disabled=!0;
+            o.textContent="Guardando...";
+            try{
+                if(t){
+                    const e=`attachments/${Date.now()}_${t.name}`;
+                    const a_ref=ref(storage,e); // Renombrada variable local
+                    await uploadBytes(a_ref,t);
+                    a.attachmentUrl=await getDownloadURL(a_ref); // Usar variable renombrada
+                    a.attachmentName=t.name;
+                }
+                if(e){
+                    const t_docRef = doc(db,"tasks",e); // Renombrada variable local
+                    await updateDoc(t_docRef,a);
+                } else {
+                    await addDoc(tasksCollection,a);
+                }
+                closeAllModals()
+            }catch(r){
+                console.error("Error al guardar la tarea: ",r);
+                alert("Hubo un error al guardar la tarea.");
+            }finally{
+                o.disabled=!1;
+                o.textContent="Guardar Tarea";
+            }
         }
-        window.onclick = (e) => { if (e.target.classList.contains('modal')) closeAllModals(); };
-        function openFormModal({ task, date }) { /* ... (sin cambios) ... */ }
-        function openDetailModal(task) { /* ... (sin cambios) ... */ }
 
-        // Event Listeners (sin cambios)
-        taskForm.addEventListener('submit', (e) => { /* ... */ });
-        taskDetailModal.querySelector('#editTaskBtn').onclick = async () => { /* ... */ };
-        taskDetailModal.querySelector('#deleteTaskBtn').onclick = deleteTask;
-        taskDetailModal.querySelector('#completeTaskBtn').onclick = toggleComplete;
+        async function deleteTask(){
+            if(!currentTaskId)return;
+            if(confirm('¿Estás seguro de que quieres eliminar esta tarea?')){
+                const e=doc(db,"tasks",currentTaskId),t=await getDoc(e),a=t.data();
+                if(a.attachmentUrl)try{
+                    const e_ref=ref(storage,a.attachmentUrl); // Renombrada variable local
+                    await deleteObject(e_ref)
+                }catch(o){
+                    console.warn("El archivo no se pudo eliminar o no existía:",o.message)
+                }
+                await deleteDoc(e),closeAllModals()
+            }
+        }
+
+        async function toggleComplete(){
+            if(!currentTaskId)return;
+            const e=doc(db,"tasks",currentTaskId),t=await getDoc(e),a=t.data().completed,o={completed:!a,completionDate:a?null:(new Date).toISOString().split("T")[0]};
+            await updateDoc(e,o),closeAllModals()
+        }
         
-        // --- COPIAR Y PEGAR LAS DEFINICIONES DE LAS FUNCIONES SIN CAMBIOS ---
-        async function saveTask(taskData){const{id:e,file:t,...a}=taskData;const o=taskFormModal.querySelector('button[type="submit"]');o.disabled=!0,o.textContent="Guardando...";try{if(t){const e=`attachments/${Date.now()}_${t.name}`,a=ref(storage,e);await uploadBytes(a,t),data.attachmentUrl=await getDownloadURL(a),data.attachmentName=t.name}e?await updateDoc(doc(db,"tasks",e),a):await addDoc(tasksCollection,a),closeAllModals()}catch(r){console.error("Error al guardar la tarea: ",r),alert("Hubo un error al guardar la tarea.")}finally{o.disabled=!1,o.textContent="Guardar Tarea"}}
-        function openFormModal({task:e,date:t}){closeAllModals(),taskForm.reset();const a=taskFormModal.querySelector("#modal-title"),o=taskFormModal.querySelector("#taskId"),r=taskFormModal.querySelector("#dueDate"),n=taskFormModal.querySelector("#current-attachment");n.textContent="",e?(a.textContent="Editar Tarea",o.value=e.id,document.getElementById("taskName").value=e.name,document.getElementById("taskClient").value=e.client,document.getElementById("aribaComm").value=e.aribaComm,r.value=e.dueDate,e.attachmentName&&(n.textContent=`Adjunto actual: ${e.attachmentName}. Sube uno nuevo para reemplazarlo.`)):(a.textContent="Nueva Tarea",o.value="",r.value=t),taskFormModal.style.display="flex"}
-        function openDetailModal(e){closeAllModals();const t=taskDetailModal.querySelector("#taskDetailContent"),a=new Date(e.dueDate+"T00:00:00").toLocaleDateString("es-ES",{year:"numeric",month:"long",day:"numeric",timeZone:"UTC"});let o="";e.attachmentUrl&&e.attachmentName&&(o=`<p><strong>Adjunto:</strong> <a href="${e.attachmentUrl}" target="_blank" rel="noopener noreferrer">${e.attachmentName}</a></p>`),t.innerHTML=`<h3>${e.name}</h3><p><strong>Cliente:</strong> ${e.client}</p><p><strong>Comunicación Ariba:</strong><br>${e.aribaComm.replace(/\n/g,"<br>")}</p>${o}<p><strong>Vencimiento:</strong> ${a}</p>`;const r=taskDetailModal.querySelector("#completeTaskBtn");r.textContent=e.completed?"Marcar como Pendiente":"Completar Tarea",r.style.backgroundColor=e.completed?"var(--pending-color)":"var(--completed-color)",taskDetailModal.style.display="flex"}
-        taskForm.addEventListener("submit",e=>{e.preventDefault();const t=document.getElementById("taskAttachment"),a={id:document.getElementById("taskId").value,name:document.getElementById("taskName").value,client:document.getElementById("taskClient").value,aribaComm:document.getElementById("aribaComm").value,dueDate:document.getElementById("dueDate").value,file:t.files[0]||null};a.id||(a.completed=!1),saveTask(a)}),taskDetailModal.querySelector("#editTaskBtn").onclick=async()=>{const e=doc(db,"tasks",currentTaskId),t=await getDoc(e);t.exists()&&openFormModal({task:{id:t.id,...t.data()}})}
+        // --- FUNCIONES PARA ABRIR MODALES ---
+        function openFormModal({task:e,date:t}){
+            closeAllModals();
+            taskForm.reset();
+            const a=taskFormModal.querySelector("#modal-title"),o=taskFormModal.querySelector("#taskId"),r=taskFormModal.querySelector("#dueDate"),n=taskFormModal.querySelector("#current-attachment");
+            n.textContent="";
+            if(e){
+                a.textContent="Editar Tarea";
+                o.value=e.id;
+                document.getElementById("taskName").value=e.name;
+                document.getElementById("taskClient").value=e.client;
+                document.getElementById("aribaComm").value=e.aribaComm;
+                r.value=e.dueDate;
+                if(e.attachmentName)n.textContent=`Adjunto actual: ${e.attachmentName}. Sube uno nuevo para reemplazarlo.`
+            } else {
+                a.textContent="Nueva Tarea";
+                o.value="";
+                r.value=t;
+            }
+            taskFormModal.style.display="flex";
+        }
         
-        // Copiar la función exportToExcel de la versión anterior
-        function exportToExcel(){if(0===allTasks.length)return void alert("No hay tareas para exportar.");const e=allTasks.map((e=>{let t="";const a=getTaskStatus(e);return"completed"===a?t="Completada":"urgent"===a?t="Urgente":t="Pendiente",{"ID Tarea":e.id,Título:e.name,Cliente:e.client,"Comunicación Ariba":e.aribaComm,"Fecha de Vencimiento":e.dueDate,Estado:t,Adjunto:e.attachmentName||"No"}})),t=XLSX.utils.json_to_sheet(e),a=XLSX.utils.book_new();XLSX.utils.book_append_sheet(a,t,"Tareas"),t["!cols"]=[{wch:20},{wch:40},{wch:20},{wch:60},{wch:20},{wch:15},{wch:30}],XLSX.writeFile(a,"ReporteDeTareas.xlsx")}
+        function openDetailModal(e){
+            closeAllModals();
+            const t=taskDetailModal.querySelector("#taskDetailContent"),a=new Date(e.dueDate+"T00:00:00").toLocaleDateString("es-ES",{year:"numeric",month:"long",day:"numeric",timeZone:"UTC"});
+            let o="";
+            if(e.attachmentUrl&&e.attachmentName)o=`<p><strong>Adjunto:</strong> <a href="${e.attachmentUrl}" target="_blank" rel="noopener noreferrer">${e.attachmentName}</a></p>`;
+            t.innerHTML=`<h3>${e.name}</h3><p><strong>Cliente:</strong> ${e.client}</p><p><strong>Comunicación Ariba:</strong><br>${e.aribaComm.replace(/\n/g,"<br>")}</p>${o}<p><strong>Vencimiento:</strong> ${a}</p>`;
+            const r=taskDetailModal.querySelector("#completeTaskBtn");
+            r.textContent=e.completed?"Marcar como Pendiente":"Completar Tarea";
+            r.style.backgroundColor=e.completed?"var(--pending-color)":"var(--completed-color)";
+            taskDetailModal.style.display="flex";
+        }
+
+        // --- EVENT LISTENERS ---
+        taskForm.addEventListener("submit",e=>{
+            e.preventDefault();
+            const t=document.getElementById("taskAttachment"),a={id:document.getElementById("taskId").value,name:document.getElementById("taskName").value,client:document.getElementById("taskClient").value,aribaComm:document.getElementById("aribaComm").value,dueDate:document.getElementById("dueDate").value,file:t.files[0]||null};
+            if(!a.id)a.completed=!1;
+            saveTask(a);
+        });
         
-        // Copiar la función openDashboard de la versión anterior
-        function openDashboard(){const e={completed:0,urgent:0,pending:0};allTasks.forEach((t=>{const a=getTaskStatus(t);e[a]++}));const t=createModal("dashboardModal",`\n                <h2 style="color: var(--accent-color);">Dashboard de Tareas</h2>\n                <div style="width: 80%; max-width: 400px; margin: 20px auto;">\n                    <canvas id="statusChart"></canvas>\n                </div>\n            `);t.style.display="flex";const a=document.getElementById("statusChart").getContext("2d");statusChart&&statusChart.destroy(),statusChart=new Chart(a,{type:"pie",data:{labels:[`Completadas (${e.completed})`,`Urgentes (${e.urgent})`,`Pendientes (${e.pending})`],datasets:[{label:"Tareas por Estado",data:[e.completed,e.urgent,e.pending],backgroundColor:["#2ecc71","#e74c3c","#f1c40f"],hoverOffset:4}]},options:{responsive:!0,plugins:{legend:{position:"top",labels:{color:"white"}}}}})}
+        taskDetailModal.querySelector("#editTaskBtn").onclick=async()=>{
+            const e=doc(db,"tasks",currentTaskId),t=await getDoc(e);
+            if(t.exists())openFormModal({task:{id:t.id,...t.data()}})
+        };
         
-        // Copiar la función toggleComplete con completionDate
-        async function toggleComplete(){if(!currentTaskId)return;const e=doc(db,"tasks",currentTaskId),t=await getDoc(e),a=t.data().completed,o={completed:!a,completionDate:a?null:(new Date).toISOString().split("T")[0]};await updateDoc(e,o),closeAllModals()}
+        taskDetailModal.querySelector("#deleteTaskBtn").onclick=deleteTask;
+        taskDetailModal.querySelector("#completeTaskBtn").onclick=toggleComplete;
 
     });
 </script>
