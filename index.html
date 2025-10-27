@@ -16,22 +16,32 @@
         #calendar-container{background-color:var(--primary-color);padding:25px; border-radius:15px;box-shadow:0 4px 20px rgba(0,0,0,.4);height:100%;box-sizing:border-box; position: relative;}
 
         /* --- CORRECCIÓN FINAL ALINEACIÓN SCROLLBAR --- */
-        /* Contenedor principal del scroll */
-        .fc .fc-scroller {
-            overflow-y: auto !important; 
-            height: 100%; 
-        }
-        /* Contenedor de la vista (Grid + Header) */
+        /* Contenedor que envuelve toda la vista (cabecera + cuerpo) */
         .fc .fc-view-harness {
-             /* Deja espacio a la derecha en el contenedor general */
-             padding-right: 17px; /* Ancho típico de scrollbar */
-             box-sizing: border-box;
+            /* Mantiene altura y permite scroll interno */
+            height: 100%; 
+            overflow: hidden; /* Evita doble scroll */
+            position: relative;
         }
-        /* Asegura que las tablas internas no intenten ocupar el espacio del padding */
-         .fc .fc-daygrid-body table, 
-         .fc .fc-timegrid-body table, 
-         .fc .fc-col-header thead { 
-             width: 100% !important; /* Que ocupen el 100% del espacio que les deja el contenedor */
+        /* Contenedor interno del scroll (solo el cuerpo) */
+        .fc .fc-scroller {
+             overflow-y: auto !important; 
+             height: 100%;
+             /* Padding a la derecha para dejar espacio al scrollbar */
+             padding-right: 17px; /* Ancho típico scrollbar */
+             box-sizing: content-box; /* El padding se añade al ancho/alto */
+        }
+        /* Asegura que la cabecera también deje el mismo espacio a la derecha */
+        .fc .fc-col-header {
+             padding-right: 17px; /* Mismo padding que el scroller */
+             box-sizing: border-box; /* El padding se incluye en el ancho */
+             /* Corrección extra: Evitar que la tabla interna se desborde */
+             overflow: hidden; 
+        }
+         /* Asegura que las tablas internas ocupen el 100% del espacio disponible *después* del padding */
+         .fc table {
+              width: 100% !important;
+              table-layout: fixed; /* Columnas de ancho fijo */
          }
         /* --- FIN CORRECCIÓN --- */
 
