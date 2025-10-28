@@ -15,57 +15,39 @@
         
         #calendar-container{background-color:var(--primary-color);padding:25px; border-radius:15px;box-shadow:0 4px 20px rgba(0,0,0,.4);height:100%;box-sizing:border-box; position: relative;}
 
-        /* --- CORRECCIÓN DEFINITIVA ALINEACIÓN Y NÚMEROS --- */
-        /* Contenedor principal de la vista */
+        /* --- CORRECCIÓN DEFINITIVA ALINEACIÓN SCROLLBAR --- */
+        /* Contenedor que envuelve toda la vista (cabecera + cuerpo) */
         .fc .fc-view-harness {
             height: 100%; 
             position: relative;
-             /* Deja espacio a la derecha consistente */
+             /* Aplica padding a TODO el contenedor, incluyendo cabecera */
              padding-right: 17px; /* Ancho típico scrollbar */
              box-sizing: border-box;
+             overflow: hidden; /* Evita doble scroll */
         }
-        /* Contenedor interno del scroll */
+        /* Contenedor interno del scroll (solo el cuerpo) */
         .fc .fc-scroller {
              overflow-y: auto !important; 
              height: 100%;
-             /* Elimina padding interno aquí */
+             /* SIN padding interno aquí, el harness ya lo tiene */
              padding-right: 0; 
              box-sizing: border-box; 
         }
-        /* Contenedor de la celda del día */
-        .fc .fc-daygrid-day-frame {
-            position: relative; 
-            min-height: 100px; 
-            padding-top: 20px; /* EMPUJA EL CONTENIDO HACIA ABAJO */
-            box-sizing: border-box;
-        }
-        /* El número del día */
-        .fc .fc-daygrid-day-number {
-            position: absolute; 
-            top: 4px;           
-            left: 6px;          
-            padding: 0;         
-            float: none;       
-            text-align: left;   
-            z-index: 1;         
-        }
-        /* Contenedor de eventos dentro del día */
-        .fc .fc-daygrid-day-events {
-            position: relative; /* Asegura flujo normal dentro del padding */
-            z-index: 0; /* Detrás del número */
-            margin-top: 0; /* Resetea margen superior si es necesario */
-        }
-        /* Asegura que la cabecera mantenga el espacio */
-        .fc .fc-col-header {
-             padding-right: 0; /* Cabecera no necesita padding interno */
-             box-sizing: border-box; 
-             overflow: hidden; 
-        }
-         /* Asegura que las tablas internas ocupen el 100% */
+         /* Asegura que las tablas internas (cuerpo y cabecera) ocupen el 100% del espacio *dentro* del harness */
          .fc table {
               width: 100% !important;
               table-layout: fixed; 
          }
+         /* Asegura que la cabecera no necesite padding extra */
+         .fc .fc-col-header {
+             padding-right: 0; 
+             box-sizing: border-box; 
+             overflow: hidden; 
+         }
+        /* Posiciona números a la izquierda */
+        .fc .fc-daygrid-day-frame { position: relative; min-height: 100px; padding-top: 20px; box-sizing: border-box; }
+        .fc .fc-daygrid-day-number { position: absolute; top: 4px; left: 6px; padding: 0; float: none; text-align: left; z-index: 1; }
+        .fc .fc-daygrid-day-events { position: relative; z-index: 0; margin-top: 0; }
         /* --- FIN CORRECCIÓN --- */
 
         .fc{font-size:1em;--fc-border-color:var(--border-color);--fc-today-bg-color:rgba(233,69,69,.15);--fc-event-text-color:#fff}.fc .fc-toolbar-title{color:var(--font-color)}.fc .fc-button-primary{background-color:var(--secondary-color);border-color:var(--secondary-color)}.fc .fc-button-primary:hover,.fc .fc-button-active{background-color:var(--accent-color)!important;border-color:var(--accent-color)!important}.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number{color:var(--accent-color);font-weight:700}.fc-event{border-width:2px!important;cursor:pointer;transition:transform .2s ease,filter .2s ease}.fc-event:hover{transform:scale(1.05);filter:brightness(1.2);z-index:10}.fc-event-main-frame{white-space:normal!important}.fc-event-title-container{padding:1px 3px}.fc-event-title{font-size:.8em}.fc-event.status-pending{background-color:var(--pending-color)!important;border-color:var(--pending-color)!important;color:#000!important}.fc-event.status-urgent{background-color:var(--urgent-color)!important;border-color:var(--urgent-color)!important}.fc-event.status-completed{background-color:var(--completed-color)!important;border-color:var(--completed-color)!important;text-decoration:line-through}.fc-list{border:none!important}.fc-list-event:hover td{background-color:var(--secondary-color)!important}.fc-list-event-title a{color:var(--font-color)!important}.fc-list-day-cushion{background-color:var(--card-bg)!important;color:var(--accent-color)!important;padding:10px 15px!important}.fc-list-table tbody tr,.fc-list-table thead tr{background-color:transparent!important}.fc-list-event.status-pending .fc-list-event-dot{border-color:var(--pending-color)!important}.fc-list-event.status-urgent .fc-list-event-dot{border-color:var(--urgent-color)!important}.fc-list-event.status-completed .fc-list-event-dot{border-color:var(--completed-color)!important}.fc-list-event-time{color:var(--font-color)!important;opacity:.8}.modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.7);align-items:center;justify-content:center}.modal-content{background-color:var(--primary-color);padding:30px;border-radius:15px;width:90%;max-width:600px;position:relative;box-shadow:0 5px 25px rgba(0,0,0,.5);max-height:80vh;display:flex;flex-direction:column}.close-btn{position:absolute;top:15px;right:20px;color:#aaa;font-size:28px;font-weight:700;cursor:pointer}#taskForm input,#taskForm textarea,#taskForm #taskAttachment{width:calc(100% - 24px);padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--secondary-color);background-color:var(--bg-color);color:var(--font-color);font-size:1em}#taskForm #taskAttachment{padding:5px}#taskForm textarea{font-family:'Poppins',sans-serif;resize:vertical}#taskForm button{width:100%;padding:15px;border:none;border-radius:8px;background-color:var(--accent-color);color:#fff;font-size:1.1em;cursor:pointer}#taskDetailContent{line-height:1.7;overflow-y:auto;word-wrap:break-word;padding-right:15px}#taskDetailContent h3{margin-top:0;color:var(--accent-color)}#taskDetailContent p{margin:10px 0;background-color:var(--card-bg);padding:10px;border-radius:8px}#taskDetailContent p a{color:var(--accent-color);text-decoration:none;font-weight:700}#taskDetailContent p a:hover{text-decoration:underline}#taskDetailActions{display:flex;gap:10px;margin-top:20px;flex-shrink:0}#taskDetailActions button{flex-grow:1;padding:12px;border-radius:8px;border:none;color:#fff;font-size:1em;cursor:pointer;transition:opacity .3s}#editTaskBtn{background-color:#3498db}#completeTaskBtn{background-color:#95a5a6}#deleteTaskBtn{background-color:var(--urgent-color)}
