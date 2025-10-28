@@ -13,36 +13,37 @@
     <style>
         :root{--bg-color:#1a1a2e;--primary-color:#16213e;--secondary-color:#0f3460;--accent-color:#e94560;--font-color:#e0e0e0;--card-bg:#1f2847;--completed-color:#2ecc71;--pending-color:#f1c40f;--urgent-color:#e74c3c;--border-color:#3a4a78}html,body{height:100%;margin:0;padding:0;overflow:hidden}body{font-family:'Poppins',sans-serif;background-color:var(--bg-color);color:var(--font-color);padding:20px;box-sizing:border-box}.container{max-width:1600px;margin:auto;height:calc(100% - 70px)}header{text-align:center;margin-bottom:20px;color:var(--accent-color);height:50px}
         
-        #calendar-container{background-color:var(--primary-color);padding:25px; border-radius:15px;box-shadow:0 4px 20px rgba(0,0,0,.4);height:100%;box-sizing:border-box; position: relative;}
-
-        /* --- CORRECCIÓN DEFINITIVA ALINEACIÓN SCROLLBAR --- */
-        /* Contenedor que envuelve toda la vista (cabecera + cuerpo) */
-        .fc .fc-view-harness {
-            height: 100%; 
+        /* --- CORRECCIÓN ESTRUCTURAL SCROLLBAR --- */
+        #calendar-container{
+            background-color:var(--primary-color);
+            padding: 25px; /* Mantiene el padding general */
+            border-radius:15px;
+            box-shadow:0 4px 20px rgba(0,0,0,.4);
+            height:100%; /* Ocupa toda la altura disponible */
+            box-sizing:border-box; 
             position: relative;
-             /* Aplica padding a TODO el contenedor, incluyendo cabecera */
-             padding-right: 17px; /* Ancho típico scrollbar */
+            overflow: hidden; /* Evita que el contenedor principal muestre scroll */
+        }
+         /* El div interno del calendario */
+        #calendar {
+            height: 100%; /* Ocupa el 100% del contenedor padre */
+            overflow-y: auto; /* MUEVE EL SCROLL AQUÍ, al div #calendar */
+             /* Padding interno para que el scroll no tape contenido */
+             padding-right: 10px; 
              box-sizing: border-box;
-             overflow: hidden; /* Evita doble scroll */
         }
-        /* Contenedor interno del scroll (solo el cuerpo) */
-        .fc .fc-scroller {
-             overflow-y: auto !important; 
-             height: 100%;
-             /* SIN padding interno aquí, el harness ya lo tiene */
-             padding-right: 0; 
-             box-sizing: border-box; 
-        }
-         /* Asegura que las tablas internas (cuerpo y cabecera) ocupen el 100% del espacio *dentro* del harness */
-         .fc table {
-              width: 100% !important;
-              table-layout: fixed; 
+         /* Elimina altura y overflow de los contenedores internos de FC */
+         .fc .fc-view-harness, 
+         .fc .fc-scroller {
+             height: auto !important; /* Altura automática basada en contenido */
+             overflow: visible !important; /* Sin scroll interno */
+             padding-right: 0; /* Sin padding interno */
          }
-         /* Asegura que la cabecera no necesite padding extra */
-         .fc .fc-col-header {
-             padding-right: 0; 
-             box-sizing: border-box; 
-             overflow: hidden; 
+         /* Restaura anchos normales */
+         .fc table, .fc .fc-col-header {
+             width: 100% !important;
+             table-layout: fixed; 
+             padding-right: 0;
          }
         /* Posiciona números a la izquierda */
         .fc .fc-daygrid-day-frame { position: relative; min-height: 100px; padding-top: 20px; box-sizing: border-box; }
@@ -166,7 +167,8 @@
                 exportButton: { text: 'Exportar a Excel', click: exportToExcel },
                 dashboardButton: { text: 'Dashboard', click: openDashboard }
             },
-            height: '100%',
+             // IMPORTANTE: Quitar el height: '100%' para que el scroll lo maneje el div #calendar
+             // height: '100%', 
             dateClick: (info) => openFormModal({ date: info.dateStr }),
             eventClick: (info) => {
                 currentTaskId = info.event.id;
@@ -198,6 +200,8 @@
                     showUrgentTasksAlert(urgentTasks);
                 }
                 firstLoad = false;
+                 // Ajustar altura después de la primera carga
+                 setTimeout(() => { calendar.updateSize(); }, 100);
             }
         });
 
