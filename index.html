@@ -15,35 +15,56 @@
         
         #calendar-container{background-color:var(--primary-color);padding:25px; border-radius:15px;box-shadow:0 4px 20px rgba(0,0,0,.4);height:100%;box-sizing:border-box; position: relative;}
 
-        /* --- CORRECCIÓN DEFINITIVA NÚMEROS A LA IZQUIERDA --- */
-        /* Contenedor interno de la celda del día */
+        /* --- CORRECCIÓN DEFINITIVA ALINEACIÓN Y NÚMEROS --- */
+        /* Contenedor principal de la vista */
+        .fc .fc-view-harness {
+            height: 100%; 
+            position: relative;
+             /* Deja espacio a la derecha consistente */
+             padding-right: 17px; /* Ancho típico scrollbar */
+             box-sizing: border-box;
+        }
+        /* Contenedor interno del scroll */
+        .fc .fc-scroller {
+             overflow-y: auto !important; 
+             height: 100%;
+             /* Elimina padding interno aquí */
+             padding-right: 0; 
+             box-sizing: border-box; 
+        }
+        /* Contenedor de la celda del día */
         .fc .fc-daygrid-day-frame {
-            position: relative; /* Contexto para posicionar el número */
-            min-height: 100px; /* Asegura altura mínima */
+            position: relative; 
+            min-height: 100px; 
+            padding-top: 20px; /* EMPUJA EL CONTENIDO HACIA ABAJO */
+            box-sizing: border-box;
         }
         /* El número del día */
         .fc .fc-daygrid-day-number {
-            position: absolute; /* Posicionamiento absoluto */
-            top: 4px;           /* Distancia desde arriba */
-            left: 6px;          /* Distancia desde la izquierda */
-            padding: 0;         /* Elimina padding original */
-            float: none;        /* Elimina float original */
-            text-align: left;   /* Asegura alineación izquierda */
-            z-index: 1;         /* Por si acaso, encima de eventos */
+            position: absolute; 
+            top: 4px;           
+            left: 6px;          
+            padding: 0;         
+            float: none;       
+            text-align: left;   
+            z-index: 1;         
         }
-        /* Restaura comportamiento normal del scroll y ancho */
-         .fc .fc-scroller {
-             overflow-y: auto !important; 
-             height: 100%;
-             padding-right: 0; /* Sin padding extra */
+        /* Contenedor de eventos dentro del día */
+        .fc .fc-daygrid-day-events {
+            position: relative; /* Asegura flujo normal dentro del padding */
+            z-index: 0; /* Detrás del número */
+            margin-top: 0; /* Resetea margen superior si es necesario */
+        }
+        /* Asegura que la cabecera mantenga el espacio */
+        .fc .fc-col-header {
+             padding-right: 0; /* Cabecera no necesita padding interno */
              box-sizing: border-box; 
-         }
-         .fc table, .fc .fc-col-header thead {
-             width: 100% !important;
-             table-layout: fixed; 
-         }
-         .fc .fc-col-header {
-             padding-right: 0; /* Sin padding extra */
+             overflow: hidden; 
+        }
+         /* Asegura que las tablas internas ocupen el 100% */
+         .fc table {
+              width: 100% !important;
+              table-layout: fixed; 
          }
         /* --- FIN CORRECCIÓN --- */
 
