@@ -11,14 +11,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        :root{--bg-color:#1a1a2e;--primary-color:#16213e;--secondary-color:#0f3460;--accent-color:#e94560;--font-color:#e0e0e0;--card-bg:#1f2847;--completed-color:#2ecc71;--pending-color:#f1c40f;--urgent-color:#e74c3c;--border-color:#3a4a78}
+        :root{--bg-color:#1a1a2e;--primary-color:#16213e;--secondary-color:#0f3460;--accent-color:#e94560;--font-color:#e0e0e0;--card-bg:#1f2847;--completed-color:#2ecc71;--pending-color:#f1c40f;--urgent-color:#e74c3c;--overdue-color:#8b0000;--border-color:#3a4a78}
         
-        /* --- ESTILOS ORIGINALES INTACTOS --- */
         html,body{height:100%;margin:0;padding:0;overflow:hidden}
         body{font-family:'Poppins',sans-serif;background-color:var(--bg-color);color:var(--font-color);padding:20px;box-sizing:border-box}
         .container{max-width:1600px;margin:auto;height:100%}
         
-        /* Ajuste ligero para que quepa el buscador */
         header{text-align:center;margin-bottom:15px;color:var(--accent-color);}
         
         #calendar-container{
@@ -26,28 +24,17 @@
             padding: 25px; 
             border-radius:15px;
             box-shadow:0 4px 20px rgba(0,0,0,.4);
-            height: calc(100% - 150px); /* Ajustado para el alto de la cabecera */
+            height: calc(100% - 150px); 
             box-sizing:border-box; 
-            overflow-y: auto; /* El contenedor principal maneja el scroll */
+            overflow-y: auto; 
             position: relative;
         }
-         #calendar, .fc .fc-view-harness, .fc .fc-scroller {
-             height: auto !important; 
-             overflow: visible !important; 
-             padding-right: 0 !important;
-             box-sizing: border-box !important;
-         }
-         .fc table, .fc .fc-col-header {
-             width: 100% !important;
-             table-layout: fixed; 
-             padding-right: 0 !important;
-             box-sizing: border-box !important;
-         }
+         #calendar, .fc .fc-view-harness, .fc .fc-scroller { height: auto !important; overflow: visible !important; padding-right: 0 !important; box-sizing: border-box !important; }
+         .fc table, .fc .fc-col-header { width: 100% !important; table-layout: fixed; padding-right: 0 !important; box-sizing: border-box !important; }
         .fc .fc-daygrid-day-frame { position: relative; min-height: 100px; padding-top: 20px; box-sizing: border-box; }
         .fc .fc-daygrid-day-number { position: absolute; top: 4px; left: 6px; padding: 0; float: none; text-align: left; z-index: 1; }
         .fc .fc-daygrid-day-events { position: relative; z-index: 0; margin-top: 0; }
 
-        /* --- ESTILOS DEL BUSCADOR Y ESTADÍSTICAS --- */
         .search-container { position: relative; margin: 0 auto 10px; max-width: 600px; width: 100%; padding: 0 20px; box-sizing: border-box; display: flex; align-items: center; justify-content: center;}
         #searchInput { width: 100%; padding: 10px 40px 10px 20px; border-radius: 25px; border: 2px solid var(--secondary-color); background-color: var(--primary-color); color: var(--font-color); font-size: 1em; outline: none; transition: all 0.3s ease; box-sizing: border-box; }
         #searchInput:focus { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(233, 69, 96, 0.5); }
@@ -56,6 +43,7 @@
         
         .quick-stats { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .stat-badge { padding: 8px 15px; border-radius: 20px; font-size: 0.9em; font-weight: 600; cursor: pointer; transition: transform 0.2s, opacity 0.3s; user-select: none; }
+        .stat-badge.overdue { background-color: rgba(139, 0, 0, 0.15); color: #ff4d4d; border: 1px solid #ff4d4d; }
         .stat-badge.urgent { background-color: rgba(231, 76, 60, 0.15); color: var(--urgent-color); border: 1px solid var(--urgent-color); }
         .stat-badge.pending { background-color: rgba(241, 196, 15, 0.15); color: var(--pending-color); border: 1px solid var(--pending-color); }
         .stat-badge.completed { background-color: rgba(46, 204, 113, 0.15); color: var(--completed-color); border: 1px solid var(--completed-color); }
@@ -64,6 +52,7 @@
         #searchResults { display: none; padding-right: 10px; }
         .search-item { background: var(--card-bg); margin-bottom: 12px; padding: 15px; border-radius: 8px; border-left: 5px solid var(--primary-color); cursor: pointer; transition: transform 0.2s, filter 0.2s; display: flex; flex-direction: column; gap: 5px;}
         .search-item:hover { transform: translateX(5px); filter: brightness(1.2); }
+        .search-item.status-overdue { border-left-color: #ff4d4d; }
         .search-item.status-urgent { border-left-color: var(--urgent-color); }
         .search-item.status-pending { border-left-color: var(--pending-color); }
         .search-item.status-completed { border-left-color: var(--completed-color); opacity: 0.6; }
@@ -72,7 +61,6 @@
         .search-item-date { font-size: 0.8em; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 12px; }
         .search-item-client { font-size: 0.9em; color: #ccc; }
 
-        /* --- RESTO DE TUS ESTILOS ORIGINALES INTACTOS --- */
         .fc{font-size:1em;--fc-border-color:var(--border-color);--fc-today-bg-color:rgba(233,69,69,.15);--fc-event-text-color:#fff}
         .fc .fc-toolbar-title{color:var(--font-color)}
         .fc .fc-button-primary{background-color:var(--secondary-color);border-color:var(--secondary-color)}
@@ -83,37 +71,68 @@
         .fc-event-main-frame{white-space:normal!important}
         .fc-event-title-container{padding:1px 3px}
         .fc-event-title{font-size:.8em}
+        
         .fc-event.status-pending{background-color:var(--pending-color)!important;border-color:var(--pending-color)!important;color:#000!important}
         .fc-event.status-urgent{background-color:var(--urgent-color)!important;border-color:var(--urgent-color)!important}
+        .fc-event.status-overdue{background-color:var(--overdue-color)!important;border-color:#ff4d4d!important; color: white !important; animation: pulse-overdue 2s infinite;}
         .fc-event.status-completed{background-color:var(--completed-color)!important;border-color:var(--completed-color)!important;text-decoration:line-through}
+        
+        @keyframes pulse-overdue { 
+            0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7); } 
+            70% { box-shadow: 0 0 0 5px rgba(255, 77, 77, 0); } 
+            100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); } 
+        }
+
         .fc-list{border:none!important}
         .fc-list-event:hover td{background-color:var(--secondary-color)!important}
         .fc-list-event-title a{color:var(--font-color)!important}
         .fc-list-day-cushion{background-color:var(--card-bg)!important;color:var(--accent-color)!important;padding:10px 15px!important}
         .fc-list-table tbody tr,.fc-list-table thead tr{background-color:transparent!important}
-        .fc-list-event.status-pending .fc-list-event-dot{border-color:var(--pending-color)!important}
-        .fc-list-event.status-urgent .fc-list-event-dot{border-color:var(--urgent-color)!important}
-        .fc-list-event.status-completed .fc-list-event-dot{border-color:var(--completed-color)!important}
-        .fc-list-event-time{color:var(--font-color)!important;opacity:.8}
+
+        /* --- BITÁCORA DE SEGUIMIENTO --- */
+        .bitacora-container { margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .bitacora-container h4 { margin-top: 0; color: var(--accent-color); margin-bottom: 10px; font-size: 1.1em;}
+        #logsList { max-height: 200px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px; }
+        .log-entry { font-size: 0.9em; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); margin-bottom: 5px; border-radius: 6px; position: relative;}
+        .log-entry:last-child { border-bottom: none; }
+        .log-date { font-size: 0.8em; color: var(--pending-color); font-weight: bold; display: block; margin-bottom: 5px; }
+        
+        /* Botones de edición de notas */
+        .log-actions { position: absolute; right: 10px; top: 10px; display: flex; gap: 5px; }
+        .log-actions button { background: none; border: none; cursor: pointer; font-size: 1em; opacity: 0.6; transition: opacity 0.2s; padding: 0;}
+        .log-actions button:hover { opacity: 1; }
+        
+        /* Caja de edición de nota en línea */
+        .log-edit-box { display: none; gap: 5px; margin-top: 5px; }
+        .log-edit-box input { flex-grow: 1; padding: 6px; border-radius: 4px; border: 1px solid var(--secondary-color); background: var(--bg-color); color: white; font-family: 'Poppins', sans-serif;}
+        .log-edit-box button { border: none; border-radius: 4px; cursor: pointer; padding: 6px 10px; font-weight: bold; color: white;}
+        .save-edit-btn { background: var(--completed-color); }
+        .cancel-edit-btn { background: var(--urgent-color); }
+
+        .add-note-area { display: flex; gap: 10px; }
+        .add-note-area input { flex-grow: 1; padding: 10px; border-radius: 5px; border: 1px solid var(--secondary-color); background: var(--bg-color); color: white; font-family: 'Poppins', sans-serif;}
+        .add-note-area button { padding: 10px 15px; border: none; border-radius: 5px; background: var(--accent-color); color: white; cursor: pointer; font-weight: bold; transition: opacity 0.3s;}
+        .add-note-area button:hover { opacity: 0.8; }
+
         .modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.7);align-items:center;justify-content:center}
-        .modal-content{background-color:var(--primary-color);padding:30px;border-radius:15px;width:90%;max-width:600px;position:relative;box-shadow:0 5px 25px rgba(0,0,0,.5);max-height:80vh;display:flex;flex-direction:column}
+        .modal-content{background-color:var(--primary-color);padding:30px;border-radius:15px;width:90%;max-width:600px;position:relative;box-shadow:0 5px 25px rgba(0,0,0,.5);max-height:85vh;display:flex;flex-direction:column}
         .close-btn{position:absolute;top:15px;right:20px;color:#aaa;font-size:28px;font-weight:700;cursor:pointer}
         #taskForm input[type="text"],#taskForm textarea{width:calc(100% - 24px);padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--secondary-color);background-color:var(--bg-color);color:var(--font-color);font-size:1em}
         #taskForm textarea{font-family:'Poppins',sans-serif;resize:vertical}
-        #taskForm button{width:100%;padding:15px;border:none;border-radius:8px;background-color:var(--accent-color);color:#fff;font-size:1.1em;cursor:pointer}
+        #taskForm button[type="submit"]{width:100%;padding:15px;border:none;border-radius:8px;background-color:var(--accent-color);color:#fff;font-size:1.1em;cursor:pointer}
         .file-drop-zone { border: 2px dashed var(--secondary-color); border-radius: 8px; padding: 15px; text-align: center; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; margin-bottom: 5px; font-size: 0.9em; color: var(--font-color); opacity: 0.8; }
         .file-drop-zone.drag-over { background-color: var(--secondary-color); border-color: var(--accent-color); opacity: 1; }
         .file-drop-zone input[type="file"] { display: none; }
         #current-attachment-envio, #current-attachment-cierre { margin-top: -10px; margin-bottom: 15px; }
-        #taskDetailContent{line-height:1.7;overflow-y:auto;word-wrap:break-word;padding-right:15px}
-        #taskDetailContent h3{margin-top:0;color:var(--accent-color)}
-        #taskDetailContent p{margin:10px 0;background-color:var(--card-bg);padding:10px;border-radius:8px}
+        #taskDetailContent{line-height:1.6;overflow-y:auto;word-wrap:break-word;padding-right:15px}
+        #taskDetailContent h3{margin-top:0;color:var(--accent-color); font-size: 1.3em;}
+        #taskDetailContent > p{margin:10px 0;background-color:var(--card-bg);padding:10px;border-radius:8px; font-size: 0.95em;}
         #taskDetailContent p a{color:var(--accent-color);text-decoration:none;font-weight:700}
         #taskDetailContent p a:hover{text-decoration:underline}
         #taskDetailActions{display:flex;gap:10px;margin-top:20px;flex-shrink:0}
         #taskDetailActions button{flex-grow:1;padding:12px;border-radius:8px;border:none;color:#fff;font-size:1em;cursor:pointer;transition:opacity .3s}
         #editTaskBtn{background-color:#3498db}#completeTaskBtn{background-color:#95a5a6}#deleteTaskBtn{background-color:var(--urgent-color)}
-        #alertModal .modal-content { max-width: 500px; } #alertModal h2 { color: var(--urgent-color); } #alertList { list-style: none; padding: 0; margin-top: 15px; } #alertList li { background-color: var(--card-bg); padding: 8px 12px; border-radius: 5px; margin-bottom: 8px; font-size: 0.9em; } #alertList li strong { color: var(--accent-color); }
+        #alertModal .modal-content { max-width: 500px; } #alertModal h2 { color: var(--urgent-color); } #alertList { list-style: none; padding: 0; margin-top: 15px; max-height: 250px; overflow-y: auto;} #alertList li { background-color: var(--card-bg); padding: 8px 12px; border-radius: 5px; margin-bottom: 8px; font-size: 0.9em; } #alertList li strong { color: var(--accent-color); }
     </style>
 </head>
 <body>
@@ -122,6 +141,7 @@
             <h1 style="margin-top: 0; margin-bottom: 10px;">Control de Tareas - SAP Ariba</h1>
             
             <div class="quick-stats">
+                <div class="stat-badge overdue" id="stat-overdue" title="Filtrar Vencidas">🚨 Vencidas: 0</div>
                 <div class="stat-badge urgent" id="stat-urgent" title="Filtrar Urgentes">🔥 Urgentes: 0</div>
                 <div class="stat-badge pending" id="stat-pending" title="Filtrar Pendientes">⏳ Pendientes: 0</div>
                 <div class="stat-badge completed" id="stat-completed" title="Filtrar Completadas">✅ Completadas: 0</div>
@@ -176,12 +196,14 @@
             const now = new Date(); now.setHours(0,0,0,0);
             const due = new Date(task.dueDate + 'T00:00:00');
             const diffDays = (due - now) / (1000*60*60*24);
-            return diffDays < 2 ? 'urgent' : 'pending';
+            if (diffDays < 0) return 'overdue'; 
+            return diffDays <= 2 ? 'urgent' : 'pending';
         };
 
         function updateQuickStats() {
-            const stats = { completed: 0, urgent: 0, pending: 0 };
+            const stats = { completed: 0, urgent: 0, pending: 0, overdue: 0 };
             allTasks.forEach(t => stats[getTaskStatus(t)]++);
+            document.getElementById('stat-overdue').innerHTML = `🚨 Vencidas: ${stats.overdue}`;
             document.getElementById('stat-urgent').innerHTML = `🔥 Urgentes: ${stats.urgent}`;
             document.getElementById('stat-pending').innerHTML = `⏳ Pendientes: ${stats.pending}`;
             document.getElementById('stat-completed').innerHTML = `✅ Completadas: ${stats.completed}`;
@@ -205,7 +227,7 @@
                 <input type="hidden" id="taskId">
                 <input type="text" id="taskName" placeholder="Título de la Tarea" required>
                 <input type="text" id="taskClient" placeholder="Cliente" required>
-                <textarea id="aribaComm" placeholder="Comunicación Ariba..." rows="4" required></textarea>
+                <textarea id="aribaComm" placeholder="Descripción inicial Ariba..." rows="4" required></textarea>
                 
                 <label for="taskAttachmentEnvio" class="file-drop-zone" id="drop-zone-envio">
                     <span id="drop-text-envio">Arrastra un archivo aquí o haz clic (Envío)</span>
@@ -264,24 +286,26 @@
         
         function exportToExcel(){
             if(allTasks.length === 0)return void alert("No hay tareas para exportar.");
-            const e=allTasks.map((e=>{let t="";const a=getTaskStatus(e);return"completed"===a?t="Completada":"urgent"===a?t="Urgente":t="Pendiente",{"ID Tarea":e.id,Título:e.name,Cliente:e.client,"Comunicación Ariba":e.aribaComm,"Fecha de Vencimiento":e.dueDate,Estado:t, 'Adjunto Envío':e.attachmentEnvioName||"No", 'Adjunto Cierre':e.attachmentCierreName||"No"}})),t=XLSX.utils.json_to_sheet(e),a=XLSX.utils.book_new();XLSX.utils.book_append_sheet(a,t,"Tareas"),t["!cols"]=[{wch:20},{wch:40},{wch:20},{wch:60},{wch:20},{wch:15},{wch:30},{wch:30}],XLSX.writeFile(a,"ReporteDeTareas.xlsx")
+            const e=allTasks.map((e=>{let t="";const a=getTaskStatus(e);return"completed"===a?t="Completada":"overdue"===a?t="Vencida":"urgent"===a?t="Urgente":t="Pendiente",{"ID Tarea":e.id,Título:e.name,Cliente:e.client,"Descripción":e.aribaComm,"Fecha de Vencimiento":e.dueDate,Estado:t, 'Adjunto Envío':e.attachmentEnvioName||"No", 'Adjunto Cierre':e.attachmentCierreName||"No"}})),t=XLSX.utils.json_to_sheet(e),a=XLSX.utils.book_new();XLSX.utils.book_append_sheet(a,t,"Tareas"),t["!cols"]=[{wch:20},{wch:40},{wch:20},{wch:60},{wch:20},{wch:15},{wch:30},{wch:30}],XLSX.writeFile(a,"ReporteDeTareas.xlsx")
         }
         
         function openDashboard(){
-            const e={completed:0,urgent:0,pending:0};allTasks.forEach((t=>{const a=getTaskStatus(t);e[a]++}));const t=createModal("dashboardModal",`\n                <h2 style="color: var(--accent-color);">Dashboard de Tareas</h2>\n                <div style="width: 80%; max-width: 400px; margin: 20px auto;">\n                    <canvas id="statusChart"></canvas>\n                </div>\n            `);t.style.display="flex";const a=document.getElementById("statusChart").getContext("2d");statusChart&&statusChart.destroy(),statusChart=new Chart(a,{type:"pie",data:{labels:[`Completadas (${e.completed})`,`Urgentes (${e.urgent})`,`Pendientes (${e.pending})`],datasets:[{label:"Tareas por Estado",data:[e.completed,e.urgent,e.pending],backgroundColor:["#2ecc71","#e74c3c","#f1c40f"],hoverOffset:4}]},options:{responsive:!0,plugins:{legend:{position:"top",labels:{color:"white"}}}}})
+            const e={completed:0,overdue:0,urgent:0,pending:0};allTasks.forEach((t=>{const a=getTaskStatus(t);e[a]++}));const t=createModal("dashboardModal",`\n                <h2 style="color: var(--accent-color);">Dashboard de Tareas</h2>\n                <div style="width: 80%; max-width: 400px; margin: 20px auto;">\n                    <canvas id="statusChart"></canvas>\n                </div>\n            `);t.style.display="flex";const a=document.getElementById("statusChart").getContext("2d");statusChart&&statusChart.destroy(),statusChart=new Chart(a,{type:"pie",data:{labels:[`Completadas (${e.completed})`,`Vencidas (${e.overdue})`,`Urgentes (${e.urgent})`,`Pendientes (${e.pending})`],datasets:[{label:"Tareas por Estado",data:[e.completed,e.overdue,e.urgent,e.pending],backgroundColor:["#2ecc71","#8b0000","#e74c3c","#f1c40f"],hoverOffset:4}]},options:{responsive:!0,plugins:{legend:{position:"top",labels:{color:"white"}}}}})
         }
         
-        function showUrgentTasksAlert(urgentTasks) {
+        function showUrgentTasksAlert(alertTasks) {
             const alertModal = createModal('alertModal', `
-                <h2><span style="font-size: 1.5em;">⚠️</span> ¡Tareas Urgentes!</h2>
-                <p>Las siguientes tareas requieren atención inmediata:</p>
+                <h2><span style="font-size: 1.5em;">⚠️</span> ¡Atención Requerida!</h2>
+                <p>Las siguientes tareas están vencidas o próximas a vencer:</p>
                 <ul id="alertList"></ul>
             `);
             const alertList = alertModal.querySelector('#alertList');
-            urgentTasks.forEach(task => {
+            alertTasks.forEach(task => {
                 const li = document.createElement('li');
                 const dueDate = new Date(task.dueDate + 'T00:00:00').toLocaleDateString("es-ES", {day:'numeric', month:'short'});
-                li.innerHTML = `${task.name} - <strong>Vence: ${dueDate}</strong>`;
+                const status = getTaskStatus(task);
+                const statusIcon = status === 'overdue' ? '🚨 VENCIDA' : '🔥 Urgente';
+                li.innerHTML = `<strong>${statusIcon}</strong> - ${task.name} <br><span style="color:#aaa; font-size: 0.9em;">Vence: ${dueDate}</span>`;
                 alertList.appendChild(li);
             });
             alertModal.style.display = 'flex';
@@ -321,7 +345,7 @@
             }
 
             if (filteredTasks.length === 0) {
-                searchResultsEl.innerHTML = '<p style="text-align:center; color:#aaa; margin-top:40px; font-size: 1.2em;">No se encontraron tareas en el historial.</p>';
+                searchResultsEl.innerHTML = '<p style="text-align:center; color:#aaa; margin-top:40px; font-size: 1.2em;">No se encontraron tareas.</p>';
                 return;
             }
 
@@ -329,7 +353,7 @@
 
             searchResultsEl.innerHTML = filteredTasks.map(task => {
                 const status = getTaskStatus(task);
-                const statusText = status === 'completed' ? 'Completada' : status === 'urgent' ? 'Urgente' : 'Pendiente';
+                const statusText = status === 'completed' ? 'Completada' : status === 'overdue' ? 'Vencida' : status === 'urgent' ? 'Urgente' : 'Pendiente';
                 const formattedDate = new Date(task.dueDate + 'T00:00:00').toLocaleDateString("es-ES", {year:"numeric", month:"short", day:"numeric"});
                 
                 return `
@@ -362,15 +386,15 @@
             }
         });
 
+        document.getElementById('stat-overdue').onclick = () => { activeFilter = 'overdue'; searchInput.value = 'Filtro: Vencidas'; executeSearch(); };
         document.getElementById('stat-urgent').onclick = () => { activeFilter = 'urgent'; searchInput.value = 'Filtro: Urgentes'; executeSearch(); };
         document.getElementById('stat-pending').onclick = () => { activeFilter = 'pending'; searchInput.value = 'Filtro: Pendientes'; executeSearch(); };
         document.getElementById('stat-completed').onclick = () => { activeFilter = 'completed'; searchInput.value = 'Filtro: Completadas'; executeSearch(); };
 
-        // --- CALENDARIO EXACTAMENTE COMO LO TENÍAS ---
         calendar = new FullCalendar.Calendar(calendarEl, {
             locale: 'es',
             initialView: 'dayGridMonth',
-            height: 'auto', /* ESTA FUE LA CLAVE ORIGINAL DE TU CÓDIGO QUE NO DEBÍ TOCAR */
+            height: 'auto', 
             headerToolbar: {
                 left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listMonth'
             },
@@ -387,7 +411,6 @@
         });
         calendar.render();
 
-        // --- LECTURA EN TIEMPO REAL ---
         onSnapshot(tasksCollection, (querySnapshot) => {
             const tasks = [];
             querySnapshot.forEach((doc) => {
@@ -399,15 +422,14 @@
             executeSearch(); 
             
             if (firstLoad) {
-                const urgentTasks = allTasks.filter(task => getTaskStatus(task) === 'urgent');
-                if (urgentTasks.length > 0) {
-                    showUrgentTasksAlert(urgentTasks);
+                const alertTasks = allTasks.filter(task => getTaskStatus(task) === 'urgent' || getTaskStatus(task) === 'overdue');
+                if (alertTasks.length > 0) {
+                    showUrgentTasksAlert(alertTasks);
                 }
                 firstLoad = false;
             }
         });
 
-        // --- FUNCIONES CRUD ---
         async function saveTask(taskData){
             const{id:e, fileEnvio:t, fileCierre:a, ...data}=taskData;
             const o=taskFormModal.querySelector('button[type="submit"]');
@@ -472,6 +494,7 @@
             taskFormModal.style.display="flex";
         }
         
+        // --- MODAL DE DETALLES: CON BITÁCORA, EDICIÓN Y ELIMINACIÓN DE NOTAS ---
         function openDetailModal(e){
             closeAllModals();
             const t=taskDetailModal.querySelector("#taskDetailContent"),a=new Date(e.dueDate+"T00:00:00").toLocaleDateString("es-ES",{year:"numeric",month:"long",day:"numeric",timeZone:"UTC"});
@@ -479,9 +502,116 @@
             if(e.attachmentEnvioUrl&&e.attachmentEnvioName)o+=`<p><strong>Adjunto Envío:</strong> <a href="${e.attachmentEnvioUrl}" target="_blank">${e.attachmentEnvioName}</a></p>`;
             if(e.attachmentCierreUrl&&e.attachmentCierreName)o+=`<p><strong>Adjunto Cierre:</strong> <a href="${e.attachmentCierreUrl}" target="_blank">${e.attachmentCierreName}</a></p>`;
             
-            t.innerHTML=`<h3>${e.name}</h3><p><strong>Cliente:</strong> ${e.client}</p><p><strong>Comunicación Ariba:</strong><br>${e.aribaComm.replace(/\n/g,"<br>")}</p>${o}<p><strong>Vencimiento:</strong> ${a}</p>`;
+            let logsHtml = '<div class="bitacora-container"><h4>📖 Bitácora de Seguimiento</h4><div id="logsList">';
+            if (e.logs && e.logs.length > 0) {
+                // Generamos cada nota con sus botones ocultos de edición
+                logsHtml += e.logs.map((log, index) => `
+                    <div class="log-entry">
+                        <div class="log-actions">
+                            <button class="edit-log-btn" data-index="${index}" title="Editar nota">✏️</button>
+                            <button class="delete-log-btn" data-index="${index}" title="Eliminar nota">🗑️</button>
+                        </div>
+                        <span class="log-date">${new Date(log.date).toLocaleString("es-ES", {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</span>
+                        <div id="log-display-${index}" style="white-space: pre-wrap;">${log.text}</div>
+                        
+                        <div class="log-edit-box" id="log-edit-box-${index}">
+                            <input type="text" id="log-edit-input-${index}" value="${log.text.replace(/"/g, '&quot;')}">
+                            <button class="save-edit-btn" data-index="${index}">💾</button>
+                            <button class="cancel-edit-btn" data-index="${index}">❌</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                logsHtml += '<p style="font-size:0.85em; color:#aaa; margin:0;">No hay notas de seguimiento aún.</p>';
+            }
+            logsHtml += '</div><div class="add-note-area"><input type="text" id="newNoteInput" placeholder="Añadir nueva nota..."><button id="saveNoteBtn">Guardar</button></div></div>';
+
+            t.innerHTML=`<h3>${e.name}</h3><p><strong>Cliente:</strong> ${e.client}</p><p><strong>Descripción:</strong><br>${e.aribaComm.replace(/\n/g,"<br>")}</p>${o}<p><strong>Vencimiento:</strong> ${a}</p>${logsHtml}`;
+            
+            // --- EVENTOS: Guardar nueva nota ---
+            const saveNoteBtn = t.querySelector("#saveNoteBtn");
+            saveNoteBtn.onclick = async () => {
+                const noteInput = t.querySelector("#newNoteInput");
+                const noteText = noteInput.value.trim();
+                if(!noteText) return;
+                
+                saveNoteBtn.disabled = true; saveNoteBtn.textContent = "...";
+                const newLog = { date: new Date().toISOString(), text: noteText };
+                const updatedLogs = [...(e.logs || []), newLog];
+                
+                try {
+                    await updateDoc(doc(db, "tasks", currentTaskId), { logs: updatedLogs });
+                    openDetailModal({ ...e, logs: updatedLogs }); 
+                } catch(err) {
+                    alert("Error al guardar la nota");
+                    saveNoteBtn.disabled = false; saveNoteBtn.textContent = "Guardar";
+                }
+            };
+
+            // --- EVENTOS: Mostrar formulario de edición ---
+            t.querySelectorAll('.edit-log-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const idx = btn.getAttribute('data-index');
+                    t.querySelector(`#log-display-${idx}`).style.display = 'none';
+                    t.querySelector(`#log-edit-box-${idx}`).style.display = 'flex';
+                    t.querySelector(`#log-edit-input-${idx}`).focus();
+                };
+            });
+
+            // --- EVENTOS: Cancelar edición ---
+            t.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const idx = btn.getAttribute('data-index');
+                    t.querySelector(`#log-display-${idx}`).style.display = 'block';
+                    t.querySelector(`#log-edit-box-${idx}`).style.display = 'none';
+                    t.querySelector(`#log-edit-input-${idx}`).value = e.logs[idx].text; // Restaurar valor
+                };
+            });
+
+            // --- EVENTOS: Guardar edición ---
+            t.querySelectorAll('.save-edit-btn').forEach(btn => {
+                btn.onclick = async () => {
+                    const idx = btn.getAttribute('data-index');
+                    const newText = t.querySelector(`#log-edit-input-${idx}`).value.trim();
+                    if (!newText || newText === e.logs[idx].text) {
+                        t.querySelector(`#log-display-${idx}`).style.display = 'block';
+                        t.querySelector(`#log-edit-box-${idx}`).style.display = 'none';
+                        return;
+                    }
+
+                    btn.disabled = true; btn.textContent = "...";
+                    const updatedLogs = [...e.logs];
+                    updatedLogs[idx].text = newText;
+                    
+                    try {
+                        await updateDoc(doc(db, "tasks", currentTaskId), { logs: updatedLogs });
+                        openDetailModal({ ...e, logs: updatedLogs });
+                    } catch(err) {
+                        alert("Error al editar la nota");
+                        btn.disabled = false; btn.textContent = "💾";
+                    }
+                };
+            });
+
+            // --- EVENTOS: Eliminar nota ---
+            t.querySelectorAll('.delete-log-btn').forEach(btn => {
+                btn.onclick = async () => {
+                    if(!confirm("¿Estás seguro de eliminar esta nota de la bitácora?")) return;
+                    
+                    const idx = parseInt(btn.getAttribute('data-index'));
+                    const updatedLogs = e.logs.filter((_, index) => index !== idx);
+                    
+                    try {
+                        await updateDoc(doc(db, "tasks", currentTaskId), { logs: updatedLogs });
+                        openDetailModal({ ...e, logs: updatedLogs });
+                    } catch(err) {
+                        alert("Error al eliminar la nota");
+                    }
+                };
+            });
+
             const r=taskDetailModal.querySelector("#completeTaskBtn");
-            r.textContent=e.completed?"Marcar como Pendiente":"Completar Tarea";
+            r.textContent=e.completed?"Marcar Pendiente":"Completar Tarea";
             r.style.backgroundColor=e.completed?"var(--pending-color)":"var(--completed-color)";
             taskDetailModal.style.display="flex";
         }
